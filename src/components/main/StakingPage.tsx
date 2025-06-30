@@ -46,7 +46,7 @@ export const StakingPage: React.FC = () => {
       <StakingCard>
         <StakingTitle>Staking</StakingTitle>
         <StakingDescription>
-          Stake your NFT here.
+        Here you’ll be able to stake your NFTs.
         </StakingDescription>
       </StakingCard>
     </StakingContainer>

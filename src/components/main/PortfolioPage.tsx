@@ -46,7 +46,7 @@ export const PortfolioPage: React.FC = () => {
       <PortfolioCard>
         <PortfolioTitle>Portfolio</PortfolioTitle>
         <PortfolioDescription>
-          Here you can see your NFTs.
+        Here you’ll be able to view your NFTs.
         </PortfolioDescription>
       </PortfolioCard>
     </PortfolioContainer>

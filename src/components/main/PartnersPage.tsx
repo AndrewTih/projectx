@@ -1,84 +1,101 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { COLORS, RADII, SHADOWS } from '../../styles/GlobalStyle';
-import { APPS } from '../../constants/profileData';
+import { COLORS } from '../../styles/GlobalStyle';
+import splitIcon from '../../assets/split.png';
+import palaceIcon from '../../assets/palace.jpg';
 import { useVibration } from '../../hooks/useVibration';
-import { TOTAL_EARNINGS, TODAY_EARNINGS } from '../../constants/chartData';
+import { TODAY_EARNINGS } from '../../constants/chartData';
+import { FiCopy } from 'react-icons/fi';
 
-const TON_TO_USD = 2.5; // захардкоженный курс для примера
+const TON_TO_USD = 2.5;
 
-const PartnersWrapper = styled.div`
+const PARTNERS = [
+  {
+    name: 'Split.tg',
+    icon: splitIcon,
+    old_ref_percent: 5,
+    new_ref_percent: 10,
+    earned: 123.45,
+    referrals: 12,
+    description: 'Split.tg — сервис для коллективных покупок и управления финансами в Telegram.',
+    refLink: 'https://split.tg/ref123',
+  },
+  {
+    name: 'PalaceNFT',
+    icon: palaceIcon,
+    old_ref_percent: 5,
+    new_ref_percent: 7,
+    earned: 54.32,
+    referrals: 8,
+    description: 'PalaceNFT — NFT-маркетплейс с уникальными коллекциями и бонусами для партнеров.',
+    refLink: 'https://palacenft.com/ref456',
+  }
+];
+
+const PageBg = styled.div`
+  min-height: 100vh;
+  width: 100vw;
+  background: ${COLORS.background};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+`;
+
+const Content = styled.div`
   width: 100%;
   max-width: 420px;
   margin: 0 auto;
-  padding: 32px 0 0 0;
+  padding: 0 0 24px 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
   flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
 `;
 
-const TotalEarningsCard = styled.div`
-  background: ${COLORS.background};
-  border-radius: ${RADII.block};
-  border: 2px solid ${COLORS.blockBorder};
-  box-shadow: ${SHADOWS.block};
-  padding: 24px 20px;
-  margin-bottom: 28px;
+const TotalBlock = styled.div`
   width: 100%;
+  padding: 24px 0 12px 0;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  border-bottom: 3px solid ${COLORS.main};
 `;
 
-const TotalEarningsTitle = styled.div`
+const TotalTitle = styled.div`
   color: ${COLORS.white};
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
   margin-bottom: 8px;
-  text-align: center;
+  padding-left: 20px;
 `;
 
-const TotalEarningsAmount = styled.div`
+const TotalTon = styled.div`
   color: ${COLORS.main};
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
-  text-align: center;
+  margin-bottom: 2px;
+  padding-left: 20px;
 `;
 
-const TotalEarningsAmountUsd = styled.div`
+const TotalUsd = styled.div`
   color: ${COLORS.text};
-  font-size: 16px;
-  margin-top: 2px;
-  text-align: center;
+  font-size: 15px;
+  margin-bottom: 12px;
+  padding-left: 20px;
 `;
 
 const TodayEarnings = styled.div`
-  color: ${COLORS.text};
+  color: ${COLORS.white};
   font-size: 15px;
-  margin-bottom: 18px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-`;
-
-const TodayTon = styled.span`
-  color: ${COLORS.main};
-  font-size: 16px;
   font-weight: 700;
-`;
-
-const TodayUsd = styled.span`
-  color: ${COLORS.text};
-  font-size: 14px;
+  margin-bottom: 0;
+  padding-left: 20px;
 `;
 
 const WithdrawButton = styled.button`
-  width: 100%;
+  width: calc(100% - 40px);
+  margin: 14px 20px 0 20px;
   height: 44px;
   background: ${COLORS.main};
   color: ${COLORS.darkText};
@@ -93,65 +110,11 @@ const WithdrawButton = styled.button`
   }
 `;
 
-const AppList = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-`;
-
-const AppCard = styled.div<{ active?: boolean; expanded?: boolean }>`
-  background: ${COLORS.background};
-  border-radius: ${RADII.block};
-  border: 2px solid ${({ active }) => (active ? COLORS.main : COLORS.blockBorder)};
-  box-shadow: ${({ active }) => (active ? SHADOWS.block : 'none')};
-  padding: 16px 18px;
-  color: #fff;
-  font-family: 'Helvetica Rounded', Arial, sans-serif;
-  cursor: pointer;
-  transition: border 0.18s, box-shadow 0.18s;
-`;
-
-const AppHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const AppIcon = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  background: ${COLORS.main};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 700;
-  color: ${COLORS.darkText};
-  flex-shrink: 0;
-`;
-
-const AppTitle = styled.div`
-  font-size: 16px;
-  font-weight: 700;
-  flex: 1;
-`;
-
-const AppBonus = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  color: ${COLORS.text};
-  margin-left: auto;
-  white-space: nowrap;
-`;
-
 const OldPercent = styled.span`
   text-decoration: line-through;
   color: #888;
   font-size: 13px;
+  margin-right: 2px;
 `;
 
 const NewPercent = styled.span`
@@ -160,133 +123,232 @@ const NewPercent = styled.span`
   font-size: 15px;
 `;
 
-const BonusLabel = styled.span`
-  color: ${COLORS.text};
-  font-size: 12px;
-  margin-right: 2px;
-`;
-
-const AppExpandIcon = styled.div<{ expanded?: boolean }>`
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 8px solid ${COLORS.text};
-  transition: transform 0.2s;
-  transform: ${({ expanded }) => (expanded ? 'rotate(180deg)' : 'rotate(0deg)')};
-  margin-top: 2px;
-`;
-
-const AppDescription = styled.div`
-  color: ${COLORS.text};
-  font-size: 14px;
-  margin: 0 0 18px 0;
-  text-align: center;
-`;
-
-const AppDetails = styled.div<{ expanded?: boolean }>`
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid ${COLORS.separator};
-  display: ${({ expanded }) => (expanded ? 'block' : 'none')};
-`;
-
-const AppRefLink = styled.div`
-  font-size: 13px;
-  color: ${COLORS.main};
-  word-break: break-all;
-  margin-bottom: 8px;
-  padding: 8px 10px;
-  background: ${COLORS.darkText};
-  border-radius: 6px;
-  border: 1px solid ${COLORS.separator};
-`;
-
-const AppStats = styled.div`
-  font-size: 14px;
-  color: ${COLORS.text};
+const PartnersList = styled.div`
+  width: 100%;
   display: flex;
-  justify-content: space-between;
-  gap: 16px;
+  flex-direction: column;
+  margin-top: 0;
+  overflow-y: auto;
 `;
 
-const AppStat = styled.div`
-  text-align: center;
-  flex: 1;
+const PartnerRow = styled.div<{expanded?: boolean}>`
+  display: flex;
+  align-items: center;
+  padding: 18px 0 14px 0;
+  position: relative;
+  cursor: pointer;
+  border-bottom: none;
+  &::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 0;
+    height: 1.5px;
+    background: ${({ expanded }) => expanded ? COLORS.separator : COLORS.main};
+    border-radius: 2px;
+    transition: background 0.25s;
+  }
 `;
 
-const AppStatValue = styled.div`
+const PartnerIcon = styled.img`
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: ${COLORS.main};
+  object-fit: cover;
+  margin-right: 14px;
+  margin-left: 20px;
+`;
+
+const PartnerInfo = styled.div`
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+`;
+
+const PartnerName = styled.div`
   color: ${COLORS.white};
-  font-weight: 700;
   font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const PartnerBonus = styled.div`
+  color: ${COLORS.main};
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const PartnerStats = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: 16px;
+  min-width: 90px;
+  margin-right: 20px;
+`;
+
+const PartnerEarned = styled.div`
+  color: ${COLORS.white};
+  font-size: 16px;
+  font-weight: 700;
   margin-bottom: 2px;
 `;
 
-const AppStatLabel = styled.div`
-  font-size: 12px;
+const PartnerReferrals = styled.div`
   color: ${COLORS.text};
+  font-size: 12px;
+`;
+
+const DetailsButton = styled.button<{active?: boolean}>`
+  margin-top: 8px;
+  padding: 6px 16px;
+  background: ${({ active }) => active ? COLORS.buttonHover : COLORS.main};
+  color: ${COLORS.darkText};
+  font-size: 14px;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:active {
+    background: ${COLORS.buttonHover};
+  }
+`;
+
+const SlideDown = styled.div<{open: boolean}>`
+  overflow: hidden;
+  max-height: ${({ open }) => (open ? '200px' : '0')};
+  opacity: ${({ open }) => (open ? 1 : 0)};
+  transition: max-height 0.35s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.25s;
+  background: ${COLORS.background};
+`;
+
+const DescriptionBlock = styled.div`
+  padding: 16px 20px 8px 72px;
+  color: ${COLORS.text};
+  font-size: 14px;
+`;
+
+const RefRow = styled.div`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  background: none;
+  padding: 0 20px 0 72px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+`;
+
+const RefLink = styled.span`
+  color: ${COLORS.main};
+  font-size: 14px;
+  word-break: break-all;
+  flex: 1;
+  font-weight: 700;
+`;
+
+const CopyIcon = styled.button`
+  background: none;
+  border: none;
+  color: ${COLORS.main};
+  cursor: pointer;
+  margin-left: 10px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  padding: 0;
+`;
+
+const LightDivider = styled.div`
+  width: 100%;
+  height: 1.5px;
+  background: none;
+  position: relative;
+  margin: 8px 0 0 0;
+  &::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 0;
+    height: 1.5px;
+    background: ${COLORS.main};
+    border-radius: 2px;
+  }
 `;
 
 export const PartnersPage: React.FC = () => {
-  const [activeApp, setActiveApp] = useState(0);
-  const [expandedApps, setExpandedApps] = useState<number[]>([]);
   const { triggerVibration } = useVibration();
-
-  const toggleAppExpansion = (idx: number) => {
-    setExpandedApps(prev => 
-      prev.includes(idx) 
-        ? prev.filter(i => i !== idx)
-        : [...prev, idx]
-    );
-  };
-
-  // Тотал в TON и $
-  const totalTon = APPS.reduce((sum, app) => sum + app.earned, 0);
+  const [expanded, setExpanded] = useState<number | null>(null);
+  const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
+  const totalTon = PARTNERS.reduce((sum, app) => sum + app.earned, 0);
   const totalUsd = totalTon * TON_TO_USD;
   const todayTon = (TODAY_EARNINGS / TON_TO_USD);
 
+  const handleDetails = (idx: number) => {
+    setExpanded(expanded === idx ? null : idx);
+  };
+
+  const handleCopy = (refLink: string, idx: number) => {
+    navigator.clipboard.writeText(refLink);
+    setCopiedIdx(idx);
+    setTimeout(() => setCopiedIdx(null), 1200);
+  };
+
   return (
-    <PartnersWrapper>
-      <TotalEarningsCard>
-        <TotalEarningsTitle>Total earned</TotalEarningsTitle>
-        <TotalEarningsAmount>{totalTon} TON</TotalEarningsAmount>
-        <TotalEarningsAmountUsd>${totalUsd.toFixed(2)}</TotalEarningsAmountUsd>
-        <TodayEarnings>
-          <TodayTon>Today: +{todayTon.toFixed(2)} TON</TodayTon>
-          <TodayUsd>(${TODAY_EARNINGS} USDT)</TodayUsd>
-        </TodayEarnings>
-        <WithdrawButton onClick={() => triggerVibration()}>Withdraw</WithdrawButton>
-      </TotalEarningsCard>
-      <AppList>
-        {APPS.map((app, idx) => (
-          <AppCard key={app.name} active={activeApp === idx} expanded={expandedApps.includes(idx)} onClick={() => toggleAppExpansion(idx)}>
-            <AppHeader>
-              <AppIcon>{app.icon}</AppIcon>
-              <AppTitle>{app.name}</AppTitle>
-              <AppBonus>
-                <BonusLabel>Реф. %:</BonusLabel>
-                <OldPercent>{app.old_ref_percent}%</OldPercent>
-                <NewPercent>{app.new_ref_percent}%</NewPercent>
-              </AppBonus>
-              <AppExpandIcon expanded={expandedApps.includes(idx)} />
-            </AppHeader>
-            <AppDescription>{app.description}</AppDescription>
-            <AppDetails expanded={expandedApps.includes(idx)}>
-              <AppRefLink>{app.refLink}</AppRefLink>
-              <AppStats>
-                <AppStat>
-                  <AppStatValue>{app.referrals}</AppStatValue>
-                  <AppStatLabel>Referrals</AppStatLabel>
-                </AppStat>
-                <AppStat>
-                  <AppStatValue>{app.earned} TON</AppStatValue>
-                  <AppStatLabel>Earnings</AppStatLabel>
-                </AppStat>
-              </AppStats>
-            </AppDetails>
-          </AppCard>
-        ))}
-      </AppList>
-    </PartnersWrapper>
+    <PageBg>
+      <Content>
+        <TotalBlock>
+          <TotalTitle>Total earned</TotalTitle>
+          <TotalTon>{totalTon} TON</TotalTon>
+          <TotalUsd>≈ ${totalUsd.toFixed(2)}</TotalUsd>
+          <TodayEarnings>Today: +{todayTon.toFixed(2)} TON (${TODAY_EARNINGS} USDT)</TodayEarnings>
+          <WithdrawButton onClick={() => triggerVibration()}>Withdraw</WithdrawButton>
+        </TotalBlock>
+        <PartnersList>
+          {PARTNERS.map((app, idx) => (
+            <React.Fragment key={app.name}>
+              <PartnerRow expanded={expanded === idx}>
+                <PartnerIcon src={app.icon} alt={app.name} />
+                <PartnerInfo>
+                  <PartnerName>{app.name}</PartnerName>
+                  <PartnerBonus>
+                    Ref: (<OldPercent>{app.old_ref_percent}%</OldPercent><NewPercent>{app.new_ref_percent}%</NewPercent>)
+                  </PartnerBonus>
+                </PartnerInfo>
+                <PartnerStats>
+                  <PartnerEarned>{app.earned} TON</PartnerEarned>
+                  <PartnerReferrals>{app.referrals} referrals</PartnerReferrals>
+                  <DetailsButton active={expanded === idx} onClick={e => { e.stopPropagation(); handleDetails(idx); triggerVibration(); }}>{expanded === idx ? 'Close' : 'Details'}</DetailsButton>
+                </PartnerStats>
+              </PartnerRow>
+              <SlideDown open={expanded === idx}>
+                <DescriptionBlock>{app.description}</DescriptionBlock>
+                <RefRow>
+                  <RefLink>{app.refLink}</RefLink>
+                  <CopyIcon onClick={() => handleCopy(app.refLink, idx)} title="Copy">
+                    <FiCopy />
+                    {copiedIdx === idx && <span style={{marginLeft: 6, fontSize: 13, color: COLORS.text}}>Copied!</span>}
+                  </CopyIcon>
+                </RefRow>
+                <LightDivider />
+              </SlideDown>
+            </React.Fragment>
+          ))}
+        </PartnersList>
+      </Content>
+    </PageBg>
   );
 }; 
